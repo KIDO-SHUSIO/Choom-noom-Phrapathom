@@ -167,10 +167,7 @@
               </select>
             </div>
           </div>
-          <div>
-            <label class="block text-sm font-medium text-gray-700">รหัสผ่านใหม่ (เว้นว่างหากไม่ต้องการเปลี่ยน)</label>
-            <input id="edit-user-new-password" type="password" class="w-full px-3 py-2 border rounded-lg" placeholder="ปล่อยว่างเพื่อไม่เปลี่ยนรหัสผ่าน">
-          </div>
+          <!-- Removed password field: password changes handled via dedicated flow -->
           <div class="flex gap-2 justify-end pt-3">
             <button type="button" onclick="closeEditUserModal()" class="px-4 py-2 border rounded-lg">ยกเลิก</button>
             <button type="submit" class="px-4 py-2 bg-indigo-600 text-white rounded-lg">บันทึก</button>
@@ -1430,32 +1427,9 @@
         seat: document.getElementById('edit-user-seat').value.trim(),
         role: document.getElementById('edit-user-role').value
       };
-
-      const newPassword = (document.getElementById('edit-user-new-password') && document.getElementById('edit-user-new-password').value) ? document.getElementById('edit-user-new-password').value.trim() : '';
-
       try {
         await db.ref('users/' + uid).update(updates);
-
-        if (newPassword) {
-          // Call callable Cloud Function to reset another user's password (requires server-side function with admin privileges)
-          try {
-            const functions = firebase.functions();
-            const resetPwd = functions.httpsCallable('adminResetPassword');
-            const res = await resetPwd({ uid: uid, newPassword: newPassword });
-            if (res && res.data && res.data.success) {
-              showToast('บันทึกข้อมูลและเปลี่ยนรหัสผ่านเรียบร้อย', 'success');
-            } else {
-              console.error('adminResetPassword returned unexpected response', res);
-              showToast('บันทึกข้อมูล แต่เปลี่ยนรหัสผ่านไม่สำเร็จ', 'warning');
-            }
-          } catch (fnErr) {
-            console.error('reset password error', fnErr);
-            showToast('บันทึกข้อมูล แต่ไม่สามารถเปลี่ยนรหัสผ่านได้ (ตรวจสอบฟังก์ชัน)', 'error');
-          }
-        } else {
-          showToast('บันทึกข้อมูลผู้ใช้สำเร็จ', 'success');
-        }
-
+        showToast('บันทึกข้อมูลผู้ใช้สำเร็จ', 'success');
         closeEditUserModal();
       } catch (err) {
         console.error('saveUserChanges error', err);
